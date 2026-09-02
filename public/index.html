@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>MCSMP Community</title>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    background: #f4f6fb;
+    color: #20232a;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* 로그인 */
+
+#loginPage {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+}
+
+.loginBox {
+    width: 100%;
+    max-width: 420px;
+
+    background: white;
+    border-radius: 22px;
+
+    padding: 35px;
+
+    box-shadow:
+        0 15px 50px rgba(0,0,0,.08);
+}
+
+.logo {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #777;
+    margin-bottom: 30px;
+}
+
+.loginBox input {
+    width: 100%;
+
+    border: 1px solid #ddd;
+    border-radius: 12px;
+
+    padding: 14px 16px;
+
+    outline: none;
+}
+
+.loginBox input:focus {
+    border-color: #5865f2;
+}
+
+.primary {
+    width: 100%;
+
+    margin-top: 12px;
+
+    border: 0;
+    border-radius: 12px;
+
+    padding: 14px;
+
+    background: #5865f2;
+    color: white;
+
+    font-weight: 700;
+}
+
+.primary:hover {
+    opacity: .9;
+}
+
+.error {
+    color: #e53935;
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+/* 앱 */
+
+#app {
+    display: none;
+    min-height: 100vh;
+}
+
+header {
+    height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 24px;
+
+    background: white;
+
+    border-bottom: 1px solid #eee;
+
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.headerLogo {
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.userArea {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    font-size: 14px;
+}
+
+.logout {
+    border: 0;
+    background: #f1f1f1;
+    border-radius: 9px;
+    padding: 8px 12px;
+}
+
+.layout {
+    max-width: 1200px;
+
+    margin: auto;
+
+    padding: 25px;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        360px;
+
+    gap: 24px;
+}
+
+/* 게시판 */
+
+.card {
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 22px;
+
+    box-shadow:
+        0 5px 25px rgba(0,0,0,.05);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+}
+
+.cardTitle {
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.writeButton {
+    border: 0;
+
+    background: #5865f2;
+    color: white;
+
+    border-radius: 10px;
+
+    padding: 9px 13px;
+
+    font-weight: 700;
+}
+
+.post {
+    padding: 17px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.post:last-child {
+    border-bottom: 0;
+}
+
+.postTitle {
+    font-weight: 750;
+    font-size: 17px;
+
+    margin-bottom: 7px;
+}
+
+.postContent {
+    white-space: pre-wrap;
+
+    color: #555;
+
+    line-height: 1.55;
+}
+
+.postMeta {
+    margin-top: 10px;
+
+    font-size: 12px;
+    color: #999;
+
+    display: flex;
+    justify-content: space-between;
+}
+
+.deleteButton {
+    border: 0;
+
+    background: #ffe9e9;
+
+    color: #d32f2f;
+
+    border-radius: 7px;
+
+    padding: 4px 8px;
+
+    font-size: 12px;
+}
+
+/* 채팅 */
+
+.chatCard {
+    display: flex;
+    flex-direction: column;
+
+    height: 600px;
+}
+
+.chatMessages {
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 5px 2px;
+}
+
+.message {
+    margin-bottom: 13px;
+}
+
+.messageAuthor {
+    font-size: 12px;
+
+    font-weight: 700;
+
+    margin-bottom: 3px;
+}
+
+.messageContent {
+    background: #f1f3f8;
+
+    border-radius: 10px;
+
+    padding: 9px 12px;
+
+    display: inline-block;
+
+    max-width: 90%;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+}
+
+.messageMeta {
+    color: #aaa;
+
+    font-size: 10px;
+
+    margin-top: 3px;
+}
+
+.chatInput {
+    display: flex;
+
+    gap: 8px;
+
+    margin-top: 12px;
+}
+
+.chatInput input {
+    flex: 1;
+
+    min-width: 0;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    padding: 11px 12px;
+
+    outline: none;
+}
+
+.chatInput button {
+    border: 0;
+
+    background: #5865f2;
+
+    color: white;
+
+    border-radius: 10px;
+
+    padding: 0 15px;
+
+    font-weight: 700;
+}
+
+/* 온라인 */
+
+.onlineBox {
+    margin-top: 18px;
+}
+
+.onlineTitle {
+    font-weight: 750;
+
+    margin-bottom: 10px;
+}
+
+.onlineUser {
+    display: inline-block;
+
+    background: #edf0ff;
+
+    color: #4b57d1;
+
+    padding: 5px 9px;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+
+    margin: 3px;
+}
+
+/* 모달 */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0,0,0,.45);
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    z-index: 100;
+}
+
+.modalBox {
+    width: 100%;
+    max-width: 500px;
+
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 24px;
+}
+
+.modalBox h2 {
+    margin-top: 0;
+}
+
+.modalBox input,
+.modalBox textarea {
+    width: 100%;
+
+    border: 1px solid #ddd;
+
+    border-radius: 10px;
+
+    padding: 11px;
+
+    margin-bottom: 10px;
+
+    outline: none;
+}
+
+.modalBox textarea {
+    min-height: 180px;
+
+    resize: vertical;
+}
+
+.modalButtons {
+    display: flex;
+
+    gap: 8px;
+}
+
+.modalButtons button {
+    flex: 1;
+
+    border: 0;
+
+    padding: 11px;
+
+    border-radius: 10px;
+}
+
+.cancel {
+    background: #eee;
+}
+
+.empty {
+    text-align: center;
+
+    padding: 35px;
+
+    color: #999;
+}
+
+/* 모바일 */
+
+@media (max-width: 800px) {
+
+    .layout {
+        grid-template-columns: 1fr;
+
+        padding: 14px;
+    }
+
+    .chatCard {
+        height: 500px;
+    }
+
+    header {
+        padding: 0 15px;
+    }
+
+    .headerLogo {
+        font-size: 18px;
+    }
+
+    .loginBox {
+        padding: 27px;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     로그인
+====================================================== -->
+
+<div id="loginPage">
+
+    <div class="loginBox">
+
+        <div class="logo">
+            MCSMP
+        </div>
+
+        <div class="subtitle">
+            친구 전용 커뮤니티
+        </div>
+
+        <input
+            id="loginCode"
+            type="password"
+            placeholder="입장코드"
+            autocomplete="off"
+        >
+
+        <button
+            class="primary"
+            onclick="login()"
+        >
+            입장하기
+        </button>
+
+        <div
+            id="loginError"
+            class="error"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     앱
+====================================================== -->
+
+<div id="app">
+
+<header>
+
+    <div class="headerLogo">
+        MCSMP
+    </div>
+
+    <div class="userArea">
+
+        <span id="username"></span>
+
+        <button
+            class="logout"
+            onclick="logout()"
+        >
+            로그아웃
+        </button>
+
+    </div>
+
+</header>
+
+
+<div class="layout">
+
+    <!-- 게시판 -->
+
+    <main>
+
+        <div class="card">
+
+            <div class="cardHeader">
+
+                <div class="cardTitle">
+                    자유 게시판
+                </div>
+
+                <button
+                    class="writeButton"
+                    onclick="openPostModal()"
+                >
+                    글쓰기
+                </button>
+
+            </div>
+
+            <div id="posts">
+                <div class="empty">
+                    불러오는 중...
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- 채팅 -->
+
+    <aside>
+
+        <div class="card chatCard">
+
+            <div class="cardHeader">
+
+                <div class="cardTitle">
+                    💬 채팅방
+                </div>
+
+            </div>
+
+            <div
+                id="chatMessages"
+                class="chatMessages"
+            ></div>
+
+            <div class="chatInput">
+
+                <input
+                    id="chatInput"
+                    type="text"
+                    maxlength="1000"
+                    placeholder="메시지를 입력하세요..."
+                    autocomplete="off"
+                >
+
+                <button onclick="sendChat()">
+                    전송
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="card onlineBox">
+
+            <div class="onlineTitle">
+                🟢 접속 중
+            </div>
+
+            <div id="onlineUsers"></div>
+
+        </div>
+
+    </aside>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     글쓰기 모달
+====================================================== -->
+
+<div
+    id="postModal"
+    class="modal"
+>
+
+    <div class="modalBox">
+
+        <h2>
+            게시글 작성
+        </h2>
+
+        <input
+            id="postTitle"
+            maxlength="100"
+            placeholder="제목"
+        >
+
+        <textarea
+            id="postContent"
+            maxlength="10000"
+            placeholder="내용"
+        ></textarea>
+
+        <div class="modalButtons">
+
+            <button
+                class="cancel"
+                onclick="closePostModal()"
+            >
+                취소
+            </button>
+
+            <button
+                class="primary"
+                onclick="createPost()"
+            >
+                작성
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let currentUser = null;
+let socket = null;
+
+
+// =====================================================
+// 로그인 상태 확인
+// =====================================================
+
+async function checkLogin() {
+
+    const response = await fetch("/api/me");
+
+    const data = await response.json();
+
+    if (data.loggedIn) {
+
+        currentUser = data;
+
+        showApp();
+
+    }
+
+}
+
+
+// =====================================================
+// 로그인
+// =====================================================
+
+async function login() {
+
+    const code =
+        document
+            .getElementById("loginCode")
+            .value
+            .trim();
+
+    const error =
+        document
+            .getElementById("loginError");
+
+    error.textContent = "";
+
+    if (!code) {
+
+        error.textContent =
+            "입장코드를 입력하세요.";
+
+        return;
+
+    }
+
+    try {
+
+        const response = await fetch(
+            "/api/login",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    code
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            error.textContent =
+                data.message ||
+                "로그인에 실패했습니다.";
+
+            return;
+
+        }
+
+        currentUser = data;
+
+        showApp();
+
+    } catch (error) {
+
+        error.textContent =
+            "서버에 연결할 수 없습니다.";
+
+    }
+
+}
+
+
+// =====================================================
+// 앱 표시
+// =====================================================
+
+function showApp() {
+
+    document
+        .getElementById("loginPage")
+        .style.display = "none";
+
+    document
+        .getElementById("app")
+        .style.display = "block";
+
+    document
+        .getElementById("username")
+        .textContent =
+            currentUser.admin
+                ? "👑 관리자"
+                : `👤 ${currentUser.name}`;
+
+    loadPosts();
+
+    connectSocket();
+
+}
+
+
+// =====================================================
+// 로그아웃
+// =====================================================
+
+async function logout() {
+
+    await fetch(
+        "/api/logout",
+        {
+            method: "POST"
+        }
+    );
+
+    if (socket) {
+
+        socket.disconnect();
+
+        socket = null;
+
+    }
+
+    location.reload();
+
+}
+
+
+// =====================================================
+// 게시판
+// =====================================================
+
+async function loadPosts() {
+
+    const response =
+        await fetch("/api/posts");
+
+    if (!response.ok) {
+
+        return;
+
+    }
+
+    const posts =
+        await response.json();
+
+    renderPosts(posts);
+
+}
+
+
+function renderPosts(posts) {
+
+    const container =
+        document.getElementById("posts");
+
+    container.innerHTML = "";
+
+    if (posts.length === 0) {
+
+        container.innerHTML =
+            `<div class="empty">
+                아직 게시글이 없습니다.
+             </div>`;
+
+        return;
+
+    }
+
+    for (const post of posts) {
+
+        const element =
+            document.createElement("div");
+
+        element.className = "post";
+
+        const date =
+            new Date(post.createdAt)
+                .toLocaleString("ko-KR");
+
+        element.innerHTML = `
+
+            <div class="postTitle">
+                ${escapeHTML(post.title)}
+            </div>
+
+            <div class="postContent">
+                ${escapeHTML(post.content)}
+            </div>
+
+            <div class="postMeta">
+
+                <span>
+                    ${escapeHTML(post.author)}
+                    · ${date}
+                </span>
+
+                ${
+                    currentUser.admin
+                    ?
+                    `<button
+                        class="deleteButton"
+                        onclick="deletePost('${post.id}')"
+                    >
+                        삭제
+                    </button>`
+                    :
+                    ""
+                }
+
+            </div>
+        `;
+
+        container.appendChild(element);
+
+    }
+
+}
+
+
+function openPostModal() {
+
+    document
+        .getElementById("postModal")
+        .style.display = "flex";
+
+}
+
+
+function closePostModal() {
+
+    document
+        .getElementById("postModal")
+        .style.display = "none";
+
+}
+
+
+async function createPost() {
+
+    const title =
+        document
+            .getElementById("postTitle")
+            .value
+            .trim();
+
+    const content =
+        document
+            .getElementById("postContent")
+            .value
+            .trim();
+
+    if (!title || !content) {
+
+        alert("제목과 내용을 입력하세요.");
+
+        return;
+
+    }
+
+    const response =
+        await fetch(
+            "/api/posts",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    title,
+                    content
+                })
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+
+        alert(data.message);
+
+        return;
+
+    }
+
+    document
+        .getElementById("postTitle")
+        .value = "";
+
+    document
+        .getElementById("postContent")
+        .value = "";
+
+    closePostModal();
+
+    loadPosts();
+
+}
+
+
+async function deletePost(id) {
+
+    if (!confirm("이 게시글을 삭제할까요?")) {
+
+        return;
+
+    }
+
+    const response =
+        await fetch(
+            `/api/posts/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+    if (response.ok) {
+
+        loadPosts();
+
+    }
+
+}
+
+
+// =====================================================
+// Socket.IO
+// =====================================================
+
+function connectSocket() {
+
+    socket = io();
+
+    socket.on("connect", () => {
+
+        console.log("Socket.IO connected");
+
+    });
+
+
+    socket.on("connect_error", error => {
+
+        console.error(
+            "Socket.IO:",
+            error.message
+        );
+
+    });
+
+
+    socket.on("chat:init", messages => {
+
+        const container =
+            document.getElementById(
+                "chatMessages"
+            );
+
+        container.innerHTML = "";
+
+        messages.forEach(
+            addChatMessage
+        );
+
+        scrollChat();
+
+    });
+
+
+    socket.on("chat:new", message => {
+
+        addChatMessage(message);
+
+        scrollChat();
+
+    });
+
+
+    socket.on("chat:deleted", id => {
+
+        const element =
+            document.querySelector(
+                `[data-message-id="${id}"]`
+            );
+
+        if (element) {
+
+            element.remove();
+
+        }
+
+    });
+
+
+    socket.on("chat:error", data => {
+
+        alert(data.message);
+
+    });
+
+
+    socket.on("online:update", users => {
+
+        renderOnlineUsers(users);
+
+    });
+
+}
+
+
+// =====================================================
+// 채팅
+// =====================================================
+
+function sendChat() {
+
+    const input =
+        document.getElementById(
+            "chatInput"
+        );
+
+    const content =
+        input.value.trim();
+
+    if (!content) {
+
+        return;
+
+    }
+
+    if (!socket) {
+
+        return;
+
+    }
+
+    socket.emit(
+        "chat:send",
+        {
+            content
+        }
+    );
+
+    input.value = "";
+
+    input.focus();
+
+}
+
+
+document
+    .getElementById("chatInput")
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendChat();
+
+            }
+
+        }
+    );
+
+
+function addChatMessage(message) {
+
+    const container =
+        document.getElementById(
+            "chatMessages"
+        );
+
+    const element =
+        document.createElement("div");
+
+    element.className = "message";
+
+    element.dataset.messageId =
+        message.id;
+
+    const date =
+        new Date(message.createdAt)
+            .toLocaleTimeString(
+                "ko-KR",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+    element.innerHTML = `
+
+        <div class="messageAuthor">
+            ${escapeHTML(message.author)}
+        </div>
+
+        <div class="messageContent">
+            ${escapeHTML(message.content)}
+        </div>
+
+        <div class="messageMeta">
+            ${date}
+
+            ${
+                currentUser.admin
+                ?
+                `<button
+                    class="deleteButton"
+                    onclick="deleteChat('${message.id}')"
+                >
+                    삭제
+                </button>`
+                :
+                ""
+            }
+        </div>
+    `;
+
+    container.appendChild(element);
+
+}
+
+
+function deleteChat(id) {
+
+    if (!currentUser.admin) {
+
+        return;
+
+    }
+
+    if (
+        !confirm("이 채팅을 삭제할까요?")
+    ) {
+
+        return;
+
+    }
+
+    socket.emit(
+        "chat:delete",
+        id
+    );
+
+}
+
+
+function scrollChat() {
+
+    const container =
+        document.getElementById(
+            "chatMessages"
+        );
+
+    container.scrollTop =
+        container.scrollHeight;
+
+}
+
+
+// =====================================================
+// 접속자
+// =====================================================
+
+function renderOnlineUsers(users) {
+
+    const container =
+        document.getElementById(
+            "onlineUsers"
+        );
+
+    container.innerHTML = "";
+
+    if (!users.length) {
+
+        container.innerHTML =
+            `<span style="color:#999">
+                없음
+             </span>`;
+
+        return;
+
+    }
+
+    users.forEach(name => {
+
+        const element =
+            document.createElement("span");
+
+        element.className =
+            "onlineUser";
+
+        element.textContent =
+            name;
+
+        container.appendChild(element);
+
+    });
+
+}
+
+
+// =====================================================
+// HTML escape
+// =====================================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+// =====================================================
+// 시작
+// =====================================================
+
+checkLogin();
+
+</script>
+
+</body>
+</html>
